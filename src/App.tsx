@@ -57,7 +57,7 @@ function App() {
           <SearchBox classNames={{
             root: 'mb-2',
             form: 'space-x-1 flex items-center',
-            input: 'border rounded p-1 text-xl',
+            input: 'border rounded p-1 text-xl flex-1',
             submit: 'hidden',
             submitIcon: 'mx-auto',
             reset: 'h-[38px] w-[38px] border rounded hover:cursor-pointer',
