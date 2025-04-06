@@ -2,6 +2,7 @@ import { InstantSearch, Highlight, Hits } from "react-instantsearch";
 import { SearchBox } from "react-instantsearch";
 import TypesenseInstantSearchAdapter from "typesense-instantsearch-adapter";
 import { Hit as AlgoliaHit } from 'instantsearch.js';
+import { capitalize } from "./utils";
 
 
 const typesenseInstantsearchAdapter = new TypesenseInstantSearchAdapter({
@@ -29,8 +30,7 @@ type HitProps = {
   hit: AlgoliaHit<{
     id: string
     podcast: string
-    episode_id: string
-    episode_title: string
+    episode: number
     speaker: string
     text: string
     line_number?: number
@@ -38,11 +38,13 @@ type HitProps = {
 };
 
 function Hit({ hit }: HitProps) {
+  const relLink = `${hit.podcast}/${hit.episode}`
+
   return (
     <div className="space-x-1">
-      <span className="font-bold">{hit.speaker}</span>
+      <span className="font-bold">{hit.speaker}&nbsp;</span>
       <Highlight hit={hit} attribute="text" />
-      <span>({hit.podcast})</span>
+      <a href={`https://changelog.com/${relLink}`} target="_blank" className="underline text-blue-600">({capitalize(hit.podcast)} {hit.episode})</a>
     </div>
   );
 }
@@ -55,14 +57,15 @@ function App() {
           <SearchBox classNames={{
             root: 'mb-2',
             form: 'space-x-1 flex items-center',
-            input: 'border rounded',
-            submit: 'h-[26px] w-[26px] border rounded',
+            input: 'border rounded p-1 text-xl',
+            submit: 'hidden',
             submitIcon: 'mx-auto',
-            reset: 'h-[26px] w-[26px] border rounded',
+            reset: 'h-[38px] w-[38px] border rounded hover:cursor-pointer',
             resetIcon: 'mx-auto',
           }} />
           <Hits hitComponent={Hit} classNames={{
-            list: 'space-y-2'
+            list: 'space-y-2',
+            emptyRoot: 'hidden',
           }} />
         </InstantSearch>
       </div>

@@ -4,6 +4,7 @@ import re
 import sys
 from typing import Mapping, TypedDict
 
+import typesense.exceptions
 from typesense.client import Client
 from typesense.configuration import ConfigDict
 
@@ -35,28 +36,29 @@ if "TS_DROP" in os.environ:
 class TranscriptLine(TypedDict):
     id: str
     podcast: str
-    episode_id: str
-    episode_title: str
+    episode: int
     speaker: str
     text: str
     line_number: int | None
 
 
 # Create transcripts collection
-create_response = client.collections.create(
-    {
-        "name": "transcripts",
-        "fields": [
-            {"name": "id", "type": "string"},
-            {"name": "podcast", "type": "string", "facet": True},
-            {"name": "episode_id", "type": "string", "facet": True},
-            {"name": "episode_title", "type": "string"},
-            {"name": "speaker", "type": "string", "facet": True},
-            {"name": "text", "type": "string"},
-            {"name": "line_number", "type": "int32", "optional": True},
-        ],
-    }
-)
+try:
+    create_response = client.collections.create(
+        {
+            "name": "transcripts",
+            "fields": [
+                {"name": "id", "type": "string"},
+                {"name": "podcast", "type": "string", "facet": True},
+                {"name": "episode", "type": "int32", "facet": True},
+                {"name": "speaker", "type": "string", "facet": True},
+                {"name": "text", "type": "string"},
+                {"name": "line_number", "type": "int32", "optional": True},
+            ],
+        }
+    )
+except typesense.exceptions.ObjectAlreadyExists:
+    pass
 
 # Add transcripts
 path = pathlib.Path("../changelog-transcripts")
@@ -73,9 +75,23 @@ for path in path.glob("*/*.md"):
 
 SPEAKER_PATTERN = re.compile(r"\*\*(.*):\*\*\s*")
 
+
+def get_episode_number(filename: str) -> int:
+    try:
+        return int(filename.split("-")[-1])
+    except (IndexError, ValueError):
+        print(f"could not parse episode number: {filename}")
+        return 0
+
+
 for podcast, episodes in transcripts_by_podcast.items():
-    for index, (episode_title, transcript) in enumerate(episodes):
-        episode_id = f"{podcast}_{index}"
+    # sort episodes in order
+    episodes = sorted(
+        episodes,
+        key=lambda title_and_transcript: get_episode_number(title_and_transcript[0]),
+    )
+    for episode_title, transcript in episodes:
+        episode = get_episode_number(episode_title)
         speaker = ""
 
         lines = [line for line in transcript.splitlines() if line.strip() != ""]
@@ -86,13 +102,12 @@ for podcast, episodes in transcripts_by_podcast.items():
                 line = line[match.regs[0][1] :]
 
             line_number = index + 1
-            id = f"{episode_id}_{line_number}"
+            id = f"{podcast}_{episode}_{line_number}"
 
             data = TranscriptLine(
                 id=id,
                 podcast=podcast,
-                episode_id=episode_title,
-                episode_title=title,
+                episode=episode,
                 speaker=speaker,
                 text=line,
                 line_number=line_number,
