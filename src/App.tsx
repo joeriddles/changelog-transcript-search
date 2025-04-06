@@ -10,7 +10,7 @@ const typesenseInstantsearchAdapter = new TypesenseInstantSearchAdapter({
     nodes: [
       {
         host: "ub24tw9s6zhiv5njp-1.a1.typesense.net",
-        port: 8108,
+        port: 443,
         protocol: "https",
       },
     ],
