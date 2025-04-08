@@ -1,4 +1,4 @@
-import { InstantSearch, Highlight, Hits } from "react-instantsearch";
+import { InstantSearch, Highlight, Hits, RefinementList } from "react-instantsearch";
 import { SearchBox } from "react-instantsearch";
 import TypesenseInstantSearchAdapter from "typesense-instantsearch-adapter";
 import { Hit as AlgoliaHit } from 'instantsearch.js';
@@ -63,10 +63,31 @@ function App() {
             reset: 'h-[38px] w-[38px] border rounded hover:cursor-pointer',
             resetIcon: 'mx-auto',
           }} />
-          <Hits hitComponent={Hit} classNames={{
-            list: 'space-y-2',
-            emptyRoot: 'hidden',
-          }} />
+          <div className="flex gap-3">
+            <div className="space-y-3">
+              <div>
+                <label>Podcast</label>
+                <RefinementList attribute="podcast" classNames={{
+                  label: 'space-x-1',
+                  count: 'hidden',
+                }} />
+              </div>
+              <div>
+                <label>Speaker</label>
+                <RefinementList attribute="speaker" searchable classNames={{
+                  label: 'space-x-1',
+                  count: 'hidden',
+                  searchBox: 'max-w-full [&_.ais-SearchBox-input]:max-w-full [&_.ais-SearchBox-input]:border [&_.ais-SearchBox-input]:rounded [&_.ais-SearchBox-submit]:hidden',
+                }} />
+              </div>
+            </div>
+            <div className="flex-1">
+              <Hits hitComponent={Hit} classNames={{
+                list: 'space-y-2',
+                emptyRoot: 'hidden',
+              }} />
+            </div>
+          </div>
         </InstantSearch>
       </div>
     </>
