@@ -31,4 +31,5 @@ typesense-data
 .venv
 *.pyc
 __pycache__
-.env
+.env*
+!.env.template
